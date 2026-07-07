@@ -32,13 +32,24 @@ app.use(express.urlencoded({ extended: true }));
 // HTTP request logger middleware
 app.use(morgan('dev'));
 
-// Root route for simple API check
+// Root health route for uptime monitoring
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy', timestamp: new Date() });
 });
 
-// Mount Routes at root level to match spec exactly:
-// e.g. POST /signup, POST /login, GET /documents, etc.
+// 1. Serve static files from the React frontend production build folder
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+// 2. SPA Route Fallback: For any browser page requests (Accept: text/html), serve React's index.html
+app.get('*', (req, res, next) => {
+  if (req.headers.accept && req.headers.accept.includes('text/html')) {
+    return res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+  }
+  next();
+});
+
+// 3. Mount Backend API Routes
 app.use('/', apiRoutes);
 
 // Catch-all route for missing endpoints
