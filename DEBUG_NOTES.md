@@ -1,217 +1,242 @@
-# Debugging & Troubleshooting Notes
+# DEBUG_NOTES.md
 
-This document captures four realistic debugging scenarios encountered during the development of the AI-Powered Knowledge Base Assistant. Each entry covers the symptom, root cause, investigation, and solution.
+# Debug Notes
+
+This document describes some of the issues I encountered while developing this project, along with how I identified and resolved them.
 
 ---
 
-## Issue 1: Server Crashes on Document Upload When `uploads/` Folder is Missing
+# Issue 1: MongoDB Connection Failed
 
-### Problem
-When attempting to upload a PDF or text file for the first time, the request fails with a `500 Internal Server Error`, and the Express terminal logs:
-`Error: ENOENT: no such file or directory, open 'D:\My Projects\AI-Powered Knowledge Base Assistant\backend\uploads\...'`
+## Problem
 
-### Root Cause
-By default, the `multer.diskStorage` configuration was pointing to a folder path (`backend/uploads`) that did not exist on the file system. Multer does not automatically create parent directories for disk storage, leading to an immediate I/O failure when writing files.
+When starting the backend server, MongoDB was not connecting and the server displayed the following error:
 
-### Investigation
-1. Inspected the Multer configuration in `backend/middleware/upload.js`.
-2. Noticed that the destination path was hardcoded to `path.join(__dirname, '../uploads')`.
-3. Verified the workspace and noticed that the `uploads/` directory had not been created yet (or was excluded from git).
-
-### Solution
-Modified `backend/middleware/upload.js` to dynamically inspect the filesystem using Node's standard `fs.existsSync` inside the storage `destination` handler, and run `fs.mkdirSync` recursively if missing:
-
-```javascript
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads');
-    // Ensure upload directory exists before writing file
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-    cb(null, uploadPath);
-  }
-});
+```
+MongoDB Connection Error:
+querySrv ECONNREFUSED
 ```
 
 ---
 
-## Issue 2: Scanned PDFs Return Empty Extracted Content Without Error
+## Root Cause
 
-### Problem
-A user uploads a PDF document successfully. However, when asking questions about it, the AI assistant constantly responds with:
-`"I couldn't find this information in the uploaded document."`
-Upon opening the Document Preview, the extracted text viewer is completely empty.
-
-### Root Cause
-The PDF uploaded is a **scanned image** (e.g., a photo of a document converted to PDF). The `pdf-parse` library reads digital text layers and metadata. It does not perform Optical Character Recognition (OCR). Therefore, it parses 0 characters without raising a code error.
-
-### Investigation
-1. Logged the parsed text in `backend/services/parserService.js` and saw `parsedText.text === ""`.
-2. Verified that the PDF opened and read fine in Chrome but text could not be highlighted (confirming it is an image PDF).
-
-### Solution
-Added a validation check in the backend parser service. If the parsed PDF returns empty text content, it throws a user-friendly error to reject the document, asking the user to upload a digitally typed PDF or text document:
-
-```javascript
-const data = await pdfParse(fileBuffer);
-if (!data || !data.text || data.text.trim() === '') {
-  throw new Error('Could not extract text from the PDF file. It may be a scanned image PDF. Please upload a digital text document.');
-}
-```
+The database connection string and DNS configuration were not working correctly with MongoDB Atlas. Because of this, the application could not establish a connection with the database.
 
 ---
 
-## Issue 3: Gemini API Call Fails with "Invalid Key" or Quota Block, Crashing the Server
+## Investigation
 
-### Problem
-When the user submits a question on the AI Chat screen, the typing indicator pulses indefinitely, and the server log reports:
-`TypeError: Cannot read properties of undefined (reading 'generateContent')` or similar, followed by a server crash.
-
-### Root Cause
-If `process.env.GEMINI_API_KEY` was missing, empty, or misspelled in the backend `.env` file, the SDK initialization succeeded but content generation calls threw uncaught exceptions. If not wrapped in proper try-catch handlers, these exceptions bubble up and crash the Node process.
-
-### Investigation
-1. Inspected `backend/services/geminiService.js`.
-2. Verified that the `GoogleGenerativeAI` instance was initialized directly without verifying if the API key variable was loaded.
-3. Observed that the service did not catch external API errors, leading to uncaught promise rejections.
-
-### Solution
-1. Added validation at the entry of the service to throw a clean error if the API key is not configured.
-2. Wrapped the entire generation block in a robust try-catch wrapper to return a clean error instead of letting the process crash.
-3. Handled the error inside `chatController.js` and passed it to the global error middleware:
-
-```javascript
-const askGemini = async (documentContent, question) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not defined in the environment configuration.');
-  }
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const result = await model.generateContent(prompt);
-    // ...
-  } catch (error) {
-    console.error('Gemini API Error:', error.message);
-    throw new Error('Gemini API communication failed. Please check your credentials and quota limits.');
-  }
-};
-```
+- Verified the MongoDB connection string.
+- Checked the database username and password.
+- Confirmed Network Access settings in MongoDB Atlas.
+- Tested DNS resolution using `nslookup`.
+- Verified the cluster was running.
 
 ---
 
-## Issue 4: Infinite Loader Screen in React App After JWT Token Expires
+## Solution
 
-### Problem
-A user logs in, closes their browser, and returns the next day. The application shows an infinite spinning loader icon and fails to display the dashboard or redirect to login.
+Updated the MongoDB connection string with the correct credentials and database name.
 
-### Root Cause
-The JWT token stored in the browser's `localStorage` expired (validity was reached). On mount, `AuthContext` retrieved the token and attempted to fetch `/me`. The server returned a `401 Unauthorized` response with a token expired message, but the React auth loading state was never set to false, locking the UI in a loading state.
-
-### Investigation
-1. Inspected `frontend/src/context/AuthContext.tsx`.
-2. Found that the `initializeAuth` method called `authService.getMe()`, but when the API call failed, the catch block logged the error but did not trigger `setLoading(false)`.
-
-### Solution
-Updated the `catch` block in `initializeAuth` to clear expired credentials from `localStorage`, set the global `user` to `null`, and always set `loading` to `false` in the `finally` block:
-
-```javascript
-useEffect(() => {
-  const initializeAuth = async () => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-        const data = await authService.getMe();
-        if (data.success && data.user) {
-          setUser(data.user);
-        }
-      } catch (error) {
-        console.error('Session initialization failed:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
-      }
-    }
-    setLoading(false); // Guarantees that loading completes, avoiding infinite spins
-  };
-
-  initializeAuth();
-}, []);
-```
+After correcting the configuration, the backend connected successfully to MongoDB Atlas.
 
 ---
 
-## Issue 5: Mongoose querySrv ECONNREFUSED DNS Resolution Failures on Windows/ISPs
+# Issue 2: Gemini API Model Error
 
-### Problem
-When starting the server on local Windows environments, database connection attempts to MongoDB Atlas clusters fail with:
-`MongoDB Connection Error: querySrv ECONNREFUSED _mongodb._tcp.assignment.oqrn0d1.mongodb.net`
+## Problem
 
-### Root Cause
-This error occurs when the default DNS server configured on the developer's computer (provided by their Internet Service Provider) does not support DNS SRV records or times out during resolution of `_mongodb._tcp` Atlas endpoints.
-
-### Investigation
-1. Confirmed that the cluster connection URL was typed correctly and Atlas cluster firewall allows connections from any IP.
-2. Verified that standard DNS A-record queries (like pinging websites) work, but custom SRV queries fail.
-
-### Solution
-Overrode the default DNS resolution configuration inside Node.js by setting the process to use Google's Public DNS servers (`8.8.8.8` and `8.8.4.4`) at the very top of `backend/server.js` before initializing Mongoose:
-
-```javascript
-require('dns').setServers(['8.8.8.8', '8.8.4.4']);
-```
-This forces all SRV record queries inside the Node runtime to resolve through Google DNS, completely bypassing local router DNS blocks.
+While asking questions from uploaded documents, the backend returned an API error because the selected Gemini model was not available for the generated API key.
 
 ---
 
-## Issue 6: `TypeError: pdfParse is not a function` on Document Upload
+## Root Cause
 
-### Problem
-During document uploads, the request fails with a `500 Internal Server Error` and the server logs:
-`TypeError: pdfParse is not a function` at `parseDocument` inside `backend/services/parserService.js`.
-
-### Root Cause
-The legacy version of `pdf-parse` (v1.1.1) exported the parser function directly as the root module export. However, newer versions (e.g. v2.x.x) export a class named `PDFParse` as a property of the main module object. Attempting to execute `pdfParse(buffer)` directly triggers a type exception.
-
-### Investigation
-1. Ran `node -e "console.log(require('pdf-parse'))"` in the terminal.
-2. Discovered that the imported package returned an object: `{ PDFParse: [class (anonymous)], Table: ..., Shape: ... }`.
-3. Verified the prototype of the `PDFParse` class and identified the `getText` asynchronous instance method.
-
-### Solution
-Updated the implementation in `backend/services/parserService.js` to instantiate the `PDFParse` class using `new pdf.PDFParse({ data: fileBuffer })` and execute `.getText()` on the resulting parser instance:
-
-```javascript
-const pdf = require('pdf-parse');
-
-const parser = new pdf.PDFParse({ data: fileBuffer });
-const data = await parser.getText();
-const text = data.text; // Extracted text string
-const pageCount = data.total; // Page count metadata
-```
+The initial model configuration was incorrect for the available API version.
 
 ---
 
-## Issue 7: `[404 Not Found] models/gemini-1.5-flash is not found for API version v1beta` on AI Questioning
+## Investigation
 
-### Problem
-When submitting a query in the chat feed, the server logs a `500 API Error`:
-`Error: Gemini API error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent.`
+- Checked the API response.
+- Verified the API key.
+- Tested different Gemini models.
+- Reviewed the official Gemini documentation.
 
-### Root Cause
-Certain Google Cloud project API keys or specific region endpoints restrict content generation lookups to newer model generations (like `gemini-2.5-flash`) and throw 404 when querying legacy names (like `gemini-1.5-flash`) on the `v1beta` endpoint structure.
+---
 
-### Investigation
-1. Created a diagnostic script `test_gemini.js` to sequentially test `gemini-1.5-flash`, `gemini-2.5-flash`, and `gemini-1.5-pro` with the active API key.
-2. Executed the script and observed that `gemini-1.5-flash` failed with 404, while `gemini-2.5-flash` succeeded immediately and returned a valid response.
+## Solution
 
-### Solution
-Modified `backend/services/geminiService.js` to query the newer model identifier:
+Updated the application to use the supported Gemini model.
 
-```javascript
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-```
+After updating the model configuration, AI responses were generated successfully.
+
+---
+
+# Issue 3: PDF Upload Failed
+
+## Problem
+
+Some PDF files were uploaded successfully, but no text was extracted from them.
+
+As a result, the AI assistant could not answer questions related to those documents.
+
+---
+
+## Root Cause
+
+The uploaded PDF was a scanned image instead of a text-based PDF.
+
+The parser could only extract text from digital PDF documents.
+
+---
+
+## Investigation
+
+- Checked the extracted text stored in MongoDB.
+- Verified the uploaded PDF manually.
+- Compared text-based PDFs with scanned PDFs.
+
+---
+
+## Solution
+
+Added validation to check whether text was successfully extracted.
+
+If no text is found, the application displays a user-friendly message asking the user to upload a text-based document.
+
+---
+
+# Issue 4: Unauthorized API Requests
+
+## Problem
+
+Protected API endpoints were returning **401 Unauthorized** even after login.
+
+---
+
+## Root Cause
+
+The frontend was not sending the JWT token in the Authorization header for every protected request.
+
+---
+
+## Investigation
+
+- Verified login response.
+- Checked browser Local Storage.
+- Inspected request headers using Developer Tools.
+- Confirmed the backend authentication middleware was working correctly.
+
+---
+
+## Solution
+
+Configured Axios to automatically attach the JWT token in every protected request using an Authorization Bearer header.
+
+After this change, protected APIs started working correctly.
+
+---
+
+# Issue 5: Invalid File Upload
+
+## Problem
+
+Users were able to select unsupported file formats such as images and executable files.
+
+---
+
+## Root Cause
+
+File validation was not properly configured in the upload middleware.
+
+---
+
+## Investigation
+
+- Tested uploading different file formats.
+- Verified MIME types.
+- Reviewed Multer configuration.
+
+---
+
+## Solution
+
+Restricted uploads to only the required file formats:
+
+- PDF
+- TXT
+- Markdown
+
+Unsupported files now display a meaningful validation message.
+
+---
+
+# Testing Performed
+
+After implementing all features, the application was tested manually.
+
+The following functionality was verified:
+
+### Authentication
+
+- User Registration
+- User Login
+- JWT Authentication
+- Logout
+
+---
+
+### Document Upload
+
+- Upload PDF
+- Upload TXT
+- Upload Markdown
+- Invalid File Upload
+
+---
+
+### AI Question Answering
+
+- Ask questions based on uploaded documents
+- Verify Gemini responses
+- Verify fallback message when the answer is not available
+
+---
+
+### Chat History
+
+- Save conversations
+- Display previous conversations
+- Verify timestamps
+
+---
+
+### Dashboard
+
+Verified:
+
+- Total Documents
+- Total Questions
+- Recent Uploads
+- Recent Conversations
+
+---
+
+### Error Handling
+
+Tested:
+
+- Invalid Login
+- Unauthorized Access
+- Invalid Upload
+- Unsupported File Type
+- Database Connection Errors
+- Gemini API Errors
+
+---
+
+# Summary
+
+The issues encountered during development helped improve the stability and reliability of the application. Each issue was investigated, tested, and resolved before the final submission to ensure the application works as expected.

@@ -1,122 +1,368 @@
-# System Architecture Design
+# Architecture
 
-This document details the software architecture, database design, and request flows of the **AI-Powered Knowledge Base Assistant**.
+## Project Overview
+
+The AI-Powered Knowledge Base Assistant is a Full Stack MERN application that allows users to upload documents and ask questions related to those documents using Google Gemini AI.
+
+The application follows a client-server architecture where the frontend communicates with the backend using REST APIs. The backend handles authentication, document processing, database operations, and AI communication.
 
 ---
 
-## High-Level System Architecture
+# Project Structure
 
-The application is structured as a decoupled client-server architecture:
-
-```mermaid
-graph TD
-    Client["React Frontend (SPA)"] <--> |"REST APIs (Axios + JWT)"| Server["Express Backend"]
-    Server <--> |"Mongoose ODM"| DB[("MongoDB")]
-    Server --> |"Google Gen AI SDK"| Gemini["Google Gemini API (1.5 Flash)"]
-    Server -.-> |"FS / Multer"| Disk["Local Disk (/uploads)"]
 ```
+AI-Powered-Knowledge-Base-Assistant
 
-### 1. Frontend Architecture
-The React single-page application is built on top of **Vite** and **TypeScript** for speedy development and type safety.
-- **Context State Management**: 
-  - `AuthContext`: Tracks user session token, handles login, register, and automatic cookie-less session persistence on load.
-  - `ToastContext`: Exposes a global utility to display alerts (success, errors, warnings) from any nested view.
-- **Service Layer**: Decoupled helper modules (`api.ts`) wrap Axios and map API endpoints. An interceptor handles inserting `Authorization: Bearer <token>` automatically.
-- **Page Views**: Modular pages represent dashboard grids, file upload areas, file catalogs, text viewers, and real-time chat boxes.
-
-### 2. Backend Architecture
-The Node-Express server acts as a REST API gateway:
-- **Routing Layer**: Express routes mount API paths, directing request inputs directly to designated controller modules.
-- **Middleware Pipeline**: Includes CORS security, HTTP morgan logging, authentication filters, Multer file upload validators, and a global error catching block.
-- **Services Layer**: Isolates external library interfaces, containing parser helpers for PDF/txt/md unzipping and text extraction, and wrappers for Gemini's AI model.
-
----
-
-## Authentication Flow
-
-Authentication is managed via JSON Web Tokens (JWT) and client-side storage:
-
-```mermaid
-sequenceDiagram
-    participant User as React App (Client)
-    participant Server as Express Server
-    participant DB as MongoDB
-
-    User->>Server: POST /login (email, password)
-    Server->>DB: Find User by email
-    DB-->>Server: User Document (hashed password)
-    Server->>Server: bcrypt.compare()
-    Note over Server: If match, sign JWT with UserID
-    Server-->>User: Response (200 OK + JWT Token + User Info)
-    Note over User: Save JWT token in LocalStorage
-    
-    User->>Server: GET /documents (Authorization: Bearer <token>)
-    Note over Server: verify JWT, fetch User from DB
-    Server-->>User: Response (200 OK + Documents List)
+│
+├── backend
+│   ├── config
+│   ├── controllers
+│   ├── middleware
+│   ├── models
+│   ├── routes
+│   ├── services
+│   ├── utils
+│   ├── uploads
+│   └── server.js
+│
+├── frontend
+│   ├── src
+│   │   ├── components
+│   │   ├── context
+│   │   ├── hooks
+│   │   ├── pages
+│   │   ├── services
+│   │   ├── types
+│   │   ├── utils
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│
+├── README.md
+├── AI_USAGE.md
+├── ARCHITECTURE.md
+└── DEBUG_NOTES.md
 ```
 
 ---
 
-## Database Design
+# Application Architecture
 
-The schema structure leverages MongoDB Document references to associate files and conversations with users:
-
-### User Document Schema
-- `_id`: ObjectId (Auto-generated)
-- `name`: String (Required, trimmed)
-- `email`: String (Required, unique, lowercase)
-- `password`: String (Required, hashed password)
-- `createdAt`: Date (Default: `Date.now`)
-
-### Document Schema
-- `_id`: ObjectId (Auto-generated)
-- `title`: String (Display name, e.g., original filename)
-- `fileName`: String (Unique file path saved on disk)
-- `fileType`: String (enum: `pdf`, `txt`, `md`)
-- `owner`: ObjectId (References `User` model, creates index)
-- `uploadedAt`: Date (Default: `Date.now`)
-- `metadata`: Object
-  - `size`: Number (bytes count)
-  - `encoding`: String
-  - `pageCount`: Number
-- `extractedContent`: String (Heavy text cached for QA reference)
-
-### Conversation Schema
-- `_id`: ObjectId (Auto-generated)
-- `user`: ObjectId (References `User` model, creates index)
-- `document`: ObjectId (References `Document` model, creates index)
-- `question`: String (User query)
-- `answer`: String (Gemini generated response answer)
-- `timestamp`: Date (Default: `Date.now`)
+```
+                React Frontend
+                      │
+                      │ REST API (Axios)
+                      ▼
+              Express.js Backend
+                      │
+      ┌───────────────┼────────────────┐
+      │               │                │
+      ▼               ▼                ▼
+ MongoDB         Google Gemini      File Upload
+                API Integration       (Multer)
+```
 
 ---
 
-## Request Flow: AI Question Answering
+# Frontend Architecture
 
-When a user selects a document and submits a question:
+The frontend is developed using React with TypeScript.
 
-1. **Payload Submission**: React posts `documentId` and `question` to `/ask`.
-2. **Authorization**: The auth middleware interceptor validates the JWT and injects `req.user`.
-3. **Context Retrieval**: The chat controller fetches the `Document` from MongoDB using `documentId` and verifies the owner is `req.user._id`.
-4. **Content Generation**: The controller extracts the document's cached `extractedContent` and invokes `askGemini(content, question)`.
-5. **AI Interaction**: The Gemini service sends the formatted prompt to the Gemini API (`gemini-2.5-flash`).
-6. **Persistence**: The server saves the user query and Gemini's response inside a new `Conversation` document.
-7. **Response Delivery**: The server returns the final answer to the client, which appends it to the chat bubbles feed.
+It is responsible for
 
----
+- User Authentication
+- Dashboard
+- Document Upload
+- AI Chat
+- Conversation History
+- Document Search
+- Dashboard Statistics
 
-## Engineering Decisions
+The frontend communicates with the backend through Axios API calls.
 
-1. **Decoupled Architecture**: Splitting `backend` and `frontend` into separate directories allows independent configuration, package updates, and deployment pipelines (e.g. hosting client on Vercel and server on Render).
-2. **Programmatic DNS Routing**: Adding `dns.setServers(['8.8.8.8'])` dynamically in `server.js` resolves the MongoDB Atlas `querySrv ECONNREFUSED` error. This bypasses local ISP router blocks without forcing developers to change their global Windows adapter properties.
-3. **Optimized Text Parsing**: Storing the extracted text in the `extractedContent` field of the MongoDB `Document` schema acts as an extraction cache. This prevents expensive physical file I/O operations and page extractions on subsequent user queries.
-4. **Verbatim TS Module Compilation**: Enforcing `import type` imports for TypeScript interfaces satisfies strict `verbatimModuleSyntax` rules, producing cleaner transpiled Javascript.
-5. **Custom Lightweight Notification System**: Developing pure CSS/React toast contexts and modal overlays avoids heavy third-party bundles like `react-toastify`, keeping the final production bundle size compact.
+JWT tokens are stored after login and automatically sent with every protected request.
 
 ---
 
-## Future Scaling Considerations
+# Backend Architecture
 
-1. **Database Search Indexes**: Add text indexes on `extractedContent`, `question`, and `answer` fields to optimize MongoDB native search filters.
-2. **Object Store Storage**: Transition files from local `/uploads` storage to Amazon S3 or Google Cloud Storage to enable horizontal backend scaling (load balancers).
-3. **Retrieval-Augmented Generation (RAG)**: For large files, chunk the text, compute vector embeddings using an embedding model, save them in vector databases, and perform semantic lookup. This feeds only the most relevant text slices to Gemini instead of the whole file, reducing costs and latency.
+The backend is developed using Node.js and Express.js.
+
+Its responsibilities include
+
+- User Authentication
+- JWT Verification
+- File Upload
+- Document Parsing
+- Database Operations
+- Google Gemini Integration
+- Chat History
+- Dashboard Data
+
+The backend exposes REST APIs that are consumed by the React frontend.
+
+---
+
+# Folder Responsibilities
+
+## controllers
+
+Contains the business logic for every API.
+
+Example
+
+- Authentication
+- Documents
+- Chat
+- Dashboard
+
+---
+
+## routes
+
+Defines all API endpoints.
+
+Example
+
+```
+POST /signup
+
+POST /login
+
+POST /documents
+
+POST /ask
+
+GET /history
+```
+
+---
+
+## models
+
+Contains MongoDB schemas.
+
+- User
+- Document
+- Conversation
+
+---
+
+## middleware
+
+Contains reusable middleware.
+
+Examples
+
+- JWT Authentication
+- File Upload
+- Error Handling
+
+---
+
+## services
+
+Contains reusable services.
+
+Examples
+
+- Gemini API
+- Document Parser
+
+---
+
+## utils
+
+Contains helper functions used across the project.
+
+---
+
+# Database Design
+
+Three collections are used.
+
+## User
+
+Stores
+
+- Name
+- Email
+- Password
+- Created Date
+
+---
+
+## Document
+
+Stores
+
+- Document Name
+- File Type
+- Owner
+- Upload Time
+- Metadata
+- Extracted Text
+
+The extracted document text is stored so that it can be reused while asking questions.
+
+---
+
+## Conversation
+
+Stores
+
+- User
+- Document
+- Question
+- AI Response
+- Timestamp
+
+This allows users to view previous conversations.
+
+---
+
+# Authentication Flow
+
+1. User registers an account.
+2. Password is encrypted using bcrypt.
+3. User logs in.
+4. Backend verifies email and password.
+5. JWT token is generated.
+6. Token is returned to the frontend.
+7. Frontend sends the token with protected API requests.
+8. Backend verifies the token before processing the request.
+
+---
+
+# Document Upload Flow
+
+1. User selects a document.
+
+2. The file is uploaded using Multer.
+
+3. Backend validates the file type.
+
+4. Text is extracted from the uploaded document.
+
+5. Extracted text is stored in MongoDB.
+
+6. Document information is saved.
+
+---
+
+# AI Question Answering Flow
+
+1. User selects a document.
+
+2. User enters a question.
+
+3. Backend retrieves the extracted document text.
+
+4. Backend sends both
+
+- Document Content
+- User Question
+
+to Google Gemini.
+
+5. Gemini generates an answer based only on the uploaded document.
+
+6. Backend stores the conversation.
+
+7. The response is sent back to the frontend.
+
+---
+
+# Dashboard Flow
+
+The dashboard collects information from MongoDB and displays
+
+- Total Documents
+- Total Questions
+- Recent Uploads
+- Recent Conversations
+
+---
+
+# Error Handling
+
+The application handles different error scenarios.
+
+Examples
+
+- Invalid Login
+- Unauthorized Access
+- Invalid File Upload
+- Unsupported File Type
+- Missing Document
+- Database Errors
+- Gemini API Errors
+
+Meaningful error messages are returned to the frontend.
+
+---
+
+# Security
+
+The application follows basic security practices.
+
+- Passwords are hashed using bcrypt.
+- JWT is used for authentication.
+- Protected APIs require valid tokens.
+- Environment variables are stored in a .env file.
+- Sensitive information is not hardcoded.
+- File types are validated before upload.
+
+---
+
+# Why These Technologies?
+
+### React
+
+Used to build a responsive and reusable user interface.
+
+### Express.js
+
+Used to create REST APIs and manage backend logic.
+
+### MongoDB
+
+Stores user information, uploaded documents, and conversation history.
+
+### JWT
+
+Provides secure authentication for protected APIs.
+
+### Multer
+
+Handles document uploads.
+
+### Google Gemini
+
+Answers user questions using uploaded document content.
+
+---
+
+# Future Improvements
+
+If this project is extended in the future, the following improvements can be added.
+
+- Multiple document upload
+- OCR support for scanned PDFs
+- Pagination
+- Role Based Access Control
+- Cloud Storage (AWS S3)
+- Better search functionality
+- AI response streaming
+- Docker deployment
+- Unit testing
+- Email verification
+
+---
+
+# Conclusion
+
+This project follows a simple and modular architecture where each part of the application has a specific responsibility.
+
+The frontend handles the user interface, the backend manages the business logic, MongoDB stores the application data, and Google Gemini provides AI-powered document question answering.
+
+The architecture is easy to understand, maintain, and extend with additional features in the future.
