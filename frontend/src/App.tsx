@@ -1,0 +1,77 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+import AppLayout from './components/Layout/AppLayout';
+
+// Auth Pages
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+
+// Dashboard & Document Pages
+import Dashboard from './pages/Dashboard';
+import UploadDocument from './pages/UploadDocument';
+import Documents from './pages/Documents';
+import DocumentPreview from './pages/DocumentPreview';
+
+// Chat & History Pages
+import AIChat from './pages/AIChat';
+import ConversationHistory from './pages/ConversationHistory';
+
+// Fallback Page
+import NotFound from './pages/NotFound';
+
+const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <ToastProvider>
+        <AuthProvider>
+          <Routes>
+            {/* ==========================================
+                Public Routes
+               ========================================== */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
+            {/* ==========================================
+                Protected Application Shell
+               ========================================== */}
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              {/* Dashboard */}
+              <Route index element={<Dashboard />} />
+
+              {/* Upload document */}
+              <Route path="upload" element={<UploadDocument />} />
+
+              {/* Document Lists & Previews */}
+              <Route path="documents" element={<Documents />} />
+              <Route path="documents/:id" element={<DocumentPreview />} />
+
+              {/* AI Chat Playground */}
+              <Route path="chat" element={<AIChat />} />
+
+              {/* Chat History Logs */}
+              <Route path="history" element={<ConversationHistory />} />
+
+              {/* 404 Fallback page nested inside Layout */}
+              <Route path="*" element={<NotFound />} />
+            </Route>
+
+            {/* Catch-all external routes -> Redirect to dashboard */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </ToastProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;
