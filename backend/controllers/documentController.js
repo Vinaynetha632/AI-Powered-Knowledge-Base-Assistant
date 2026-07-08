@@ -5,13 +5,13 @@ const Conversation = require('../models/Conversation');
 const { parseDocument } = require('../services/parserService');
 
 /**
- * @desc    Upload new document and extract content
- * @route   POST /documents
- * @access  Private
+ * @desc    
+ * @route   
+ * @access  
  */
 const uploadDocument = async (req, res, next) => {
   try {
-    // 1. Ensure file exists in request
+    
     if (!req.file) {
       res.status(400);
       throw new Error('Please upload a file. Supported formats: PDF, TXT, MD.');
@@ -19,16 +19,15 @@ const uploadDocument = async (req, res, next) => {
 
     const { path: tempPath, originalname, size, mimetype } = req.file;
 
-    // 2. Determine file type
     let fileType = 'txt';
     const ext = path.extname(originalname).toLowerCase();
     if (ext === '.pdf') fileType = 'pdf';
     if (ext === '.md' || ext === '.markdown') fileType = 'md';
 
-    // 3. Parse and extract text content
+t
     const parseResult = await parseDocument(tempPath, originalname);
 
-    // 4. Save document record in DB
+    
     const document = await Document.create({
       title: originalname,
       fileName: req.file.filename,
@@ -55,7 +54,6 @@ const uploadDocument = async (req, res, next) => {
       },
     });
   } catch (error) {
-    // Clean up file from server storage in case of failure
     if (req.file) {
       try {
         await fs.unlink(req.file.path);
@@ -68,9 +66,9 @@ const uploadDocument = async (req, res, next) => {
 };
 
 /**
- * @desc    Get all documents for the authenticated user
- * @route   GET /documents
- * @access  Private
+ * @desc    
+ * @route  
+ * @access  
  */
 const getDocuments = async (req, res, next) => {
   const { search } = req.query;
@@ -78,13 +76,13 @@ const getDocuments = async (req, res, next) => {
   try {
     let query = { owner: req.user._id };
 
-    // Apply search filter if query is provided
+   
     if (search) {
       query.title = { $regex: search, $options: 'i' };
     }
 
     const documents = await Document.find(query)
-      .select('-extractedContent') // Exclude heavy text content for performance
+      .select('-extractedContent') 
       .sort({ uploadedAt: -1 });
 
     res.status(200).json({
@@ -98,9 +96,9 @@ const getDocuments = async (req, res, next) => {
 };
 
 /**
- * @desc    Get a single document by ID (with extracted content for preview)
- * @route   GET /documents/:id
- * @access  Private
+ * @desc    
+ * @route  
+ * @access  
  */
 const getDocumentById = async (req, res, next) => {
   try {
@@ -124,13 +122,13 @@ const getDocumentById = async (req, res, next) => {
 };
 
 /**
- * @desc    Delete a document, its physical file, and associated chat history
- * @route   DELETE /documents/:id
- * @access  Private
+ * @desc   
+ * @route   
+ * @access  
  */
 const deleteDocument = async (req, res, next) => {
   try {
-    // Find the document and check ownership
+    
     const document = await Document.findOne({
       _id: req.params.id,
       owner: req.user._id,
@@ -141,7 +139,6 @@ const deleteDocument = async (req, res, next) => {
       throw new Error('Document not found or you do not have permission to delete it.');
     }
 
-    // 1. Delete the physical file from disk
     const filePath = path.join(__dirname, '../uploads', document.fileName);
     try {
       await fs.unlink(filePath);
@@ -149,10 +146,8 @@ const deleteDocument = async (req, res, next) => {
       console.warn(`Physical file ${document.fileName} not found on disk, skipping file unlink.`, err.message);
     }
 
-    // 2. Delete the document record from MongoDB
     await Document.deleteOne({ _id: document._id });
 
-    // 3. Delete all conversations related to this document
     await Conversation.deleteMany({ document: document._id });
 
     res.status(200).json({

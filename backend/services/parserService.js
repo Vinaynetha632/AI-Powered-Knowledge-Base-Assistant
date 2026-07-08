@@ -3,11 +3,9 @@ const path = require('path');
 const pdf = require('pdf-parse');
 
 /**
- * Extracts text content from a given file based on its extension.
- * Supports PDF (via pdf-parse), TXT, and Markdown (UTF-8 read).
  * 
- * @param {string} filePath - Absolute path to the uploaded file on disk
- * @param {string} originalName - Original filename (to inspect extension)
+ * @param {string} filePath 
+ * @param {string} originalName 
  * @returns {Promise<{text: string, pageCount: number}>}
  */
 const parseDocument = async (filePath, originalName) => {
@@ -17,7 +15,6 @@ const parseDocument = async (filePath, originalName) => {
     if (ext === '.pdf') {
       const fileBuffer = await fs.readFile(filePath);
       
-      // Instantiate the PDF parser class (compatible with pdf-parse v2)
       const parser = new pdf.PDFParse({ data: fileBuffer });
       const data = await parser.getText();
       

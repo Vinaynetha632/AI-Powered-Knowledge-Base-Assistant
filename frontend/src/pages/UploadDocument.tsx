@@ -29,7 +29,6 @@ const UploadDocument: React.FC = () => {
     if (!allowedExtensions.includes(ext)) {
       return 'Unsupported file format. Please upload PDF, TXT, or MD files.';
     }
-    // 10MB limit
     if (file.size > 10 * 1024 * 1024) {
       return 'File size is too large. Maximum allowed size is 10MB.';
     }
@@ -89,7 +88,6 @@ const UploadDocument: React.FC = () => {
       const res = await documentService.upload(selectedFile);
       if (res.success && res.document) {
         showToast('Document uploaded and text content extracted successfully!', 'success');
-        // Redirect to AI Chat with pre-selected document
         navigate(`/chat?docId=${res.document._id}`);
       }
     } catch (err: any) {
@@ -124,7 +122,6 @@ const UploadDocument: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 font-sans">
-      {/* Description header */}
       <div className="space-y-1">
         <h1 className="text-xl font-extrabold text-zinc-950 dark:text-white">
           Upload Knowledge File
@@ -135,7 +132,6 @@ const UploadDocument: React.FC = () => {
       </div>
 
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-2xl shadow-sm space-y-6">
-        {/* Error message */}
         {error && (
           <div className="flex items-start gap-2.5 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-xs font-semibold text-rose-800 dark:text-rose-300">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -143,7 +139,6 @@ const UploadDocument: React.FC = () => {
           </div>
         )}
 
-        {/* Drag and Drop Zone */}
         {!selectedFile && (
           <div
             onDragEnter={handleDrag}
@@ -177,7 +172,6 @@ const UploadDocument: React.FC = () => {
           </div>
         )}
 
-        {/* Selected file preview */}
         {selectedFile && (
           <div className="border border-zinc-200 dark:border-zinc-800 p-4 rounded-xl flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
             <div className="flex items-center gap-3.5 min-w-0">
@@ -207,7 +201,6 @@ const UploadDocument: React.FC = () => {
           </div>
         )}
 
-        {/* Action Button */}
         {selectedFile && (
           <div className="flex justify-end pt-2">
             <button

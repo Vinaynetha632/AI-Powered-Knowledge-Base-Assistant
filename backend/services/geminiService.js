@@ -1,12 +1,11 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 /**
- * Sends a prompt containing document context and user question to the Gemini API.
- * Ensures the response is strictly constrained to the document contents.
+
  * 
- * @param {string} documentContent - The extracted text from the document
- * @param {string} question - The user's query
- * @returns {Promise<string>} - The response answer from Gemini
+ * @param {string} documentContent 
+ * @param {string} question 
+ * @returns {Promise<string>} 
  */
 const askGemini = async (documentContent, question) => {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -17,7 +16,6 @@ const askGemini = async (documentContent, question) => {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Using gemini-2.5-flash as the standard, fast, and highly capable model
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = `You are an AI-powered Knowledge Base Assistant.

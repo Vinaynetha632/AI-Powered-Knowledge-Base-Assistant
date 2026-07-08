@@ -81,7 +81,6 @@ const DocumentPreview: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Navigation & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <Link
           to="/documents"
@@ -99,9 +98,7 @@ const DocumentPreview: React.FC = () => {
         </Link>
       </div>
 
-      {/* Grid Layout: Left Panel Info, Right Panel Extracted Text */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Info panel */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-5 rounded-2xl shadow-sm space-y-5">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-150 dark:border-zinc-800 shadow-inner">
@@ -156,7 +153,6 @@ const DocumentPreview: React.FC = () => {
           </div>
         </div>
 
-        {/* Text Transcript panel */}
         <div className="lg:col-span-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[500px]">
           <div className="px-5 py-4 border-b border-zinc-150 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/40">
             <h3 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">

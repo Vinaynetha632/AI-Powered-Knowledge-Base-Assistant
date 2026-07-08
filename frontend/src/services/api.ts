@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// Get backend API URL from env or fallback based on environment location
 const API_BASE_URL = import.meta.env.VITE_API_URL || 
   (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
     ? 'http://localhost:5000' 
@@ -13,7 +12,6 @@ const api = axios.create({
   },
 });
 
-// Axios Request Interceptor: Attach JWT Token to every request automatically
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -27,26 +25,21 @@ api.interceptors.request.use(
   }
 );
 
-// Axios Response Interceptor: Catch JWT expiration errors and trigger logout
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
       const message = error.response.data?.message || '';
-      // If token is expired or unauthorized, clean storage and redirect if appropriate
       if (message.includes('expired') || message.includes('token') || message.includes('authorized')) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        // Let components/contexts handle redirect or refresh state
       }
     }
     return Promise.reject(error);
   }
 );
 
-// ==========================================
-// Authentication Endpoints
-// ==========================================
+
 export const authService = {
   signup: async (userData: any) => {
     const response = await api.post('/signup', userData);
@@ -68,9 +61,7 @@ export const authService = {
   },
 };
 
-// ==========================================
-// Document Management Endpoints
-// ==========================================
+
 export const documentService = {
   list: async (search?: string) => {
     const params = search ? { search } : {};
@@ -97,9 +88,7 @@ export const documentService = {
   },
 };
 
-// ==========================================
-// AI Question Answering & Chat Endpoints
-// ==========================================
+
 export const chatService = {
   ask: async (documentId: string, question: string) => {
     const response = await api.post('/ask', { documentId, question });
@@ -112,9 +101,6 @@ export const chatService = {
   },
 };
 
-// ==========================================
-// Dashboard Metrics Endpoints
-// ==========================================
 export const dashboardService = {
   getStats: async () => {
     const response = await api.get('/dashboard');

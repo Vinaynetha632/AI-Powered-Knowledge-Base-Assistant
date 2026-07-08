@@ -38,7 +38,7 @@ const AIChat: React.FC = () => {
   const [docsLoading, setDocsLoading] = useState(true);
   const [sending, setSending] = useState(false);
 
-  // Fetch the list of documents available for selection
+
   useEffect(() => {
     const loadDocuments = async () => {
       try {
@@ -47,7 +47,7 @@ const AIChat: React.FC = () => {
         if (res.success) {
           setDocuments(res.documents);
           
-          // Pre-select document from URL if exists and is valid
+        
           if (urlDocId && res.documents.some((d: Document) => d._id === urlDocId)) {
             setSelectedDocId(urlDocId);
           } else if (res.documents.length > 0) {
@@ -64,7 +64,7 @@ const AIChat: React.FC = () => {
     loadDocuments();
   }, [urlDocId]);
 
-  // Load selected document details when ID changes
+
   useEffect(() => {
     if (!selectedDocId) {
       setSelectedDoc(null);
@@ -75,7 +75,7 @@ const AIChat: React.FC = () => {
     const doc = documents.find((d) => d._id === selectedDocId);
     if (doc) {
       setSelectedDoc(doc);
-      // Reset local chat thread when changing documents
+    
       setMessages([
         {
           sender: 'ai',
@@ -86,7 +86,7 @@ const AIChat: React.FC = () => {
     }
   }, [selectedDocId, documents]);
 
-  // Scroll to bottom of chat feed when messages update
+ 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sending]);
@@ -104,7 +104,7 @@ const AIChat: React.FC = () => {
     const userQuestion = question.trim();
     setQuestion('');
     
-    // Add user question to state
+   
     setMessages((prev) => [
       ...prev,
       { sender: 'user', text: userQuestion, timestamp: new Date() },
@@ -154,7 +154,6 @@ const AIChat: React.FC = () => {
 
   return (
     <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col font-sans">
-      {/* Top selection bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl shadow-sm flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400">
@@ -188,9 +187,7 @@ const AIChat: React.FC = () => {
         )}
       </div>
 
-      {/* Main Chat Container */}
       <div className="flex-1 min-h-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm flex flex-col overflow-hidden">
-        {/* Document Header details */}
         {selectedDoc && (
           <div className="px-5 py-3 border-b border-zinc-150 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40 flex-shrink-0">
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-zinc-650 dark:text-zinc-300 max-w-[300px] truncate">
@@ -206,7 +203,6 @@ const AIChat: React.FC = () => {
           </div>
         )}
 
-        {/* Message Feed */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-zinc-50 dark:bg-zinc-950 select-text">
           {documents.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-4">
@@ -261,7 +257,6 @@ const AIChat: React.FC = () => {
                 );
               })}
 
-              {/* Typing indicator */}
               {sending && (
                 <div className="flex justify-start animate-pulse">
                   <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl rounded-tl-none p-4 text-sm shadow-sm flex items-center gap-2">
@@ -277,7 +272,6 @@ const AIChat: React.FC = () => {
           )}
         </div>
 
-        {/* Input Form Footer */}
         {documents.length > 0 && (
           <form
             onSubmit={handleSend}

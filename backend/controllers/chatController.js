@@ -3,21 +3,21 @@ const Document = require('../models/Document');
 const { askGemini } = require('../services/geminiService');
 
 /**
- * @desc    Submit a question about a document to the Gemini API and save conversation
- * @route   POST /ask
- * @access  Private
+ * @desc    
+ * @route   
+ * @access  
  */
 const askQuestion = async (req, res, next) => {
   const { documentId, question } = req.body;
 
   try {
-    // 1. Validate input parameters
+  
     if (!documentId || !question || !question.trim()) {
       res.status(400);
       throw new Error('Please select a document and enter a question.');
     }
 
-    // 2. Retrieve document and verify ownership
+  
     const document = await Document.findOne({
       _id: documentId,
       owner: req.user._id,
@@ -28,10 +28,8 @@ const askQuestion = async (req, res, next) => {
       throw new Error('Selected document not found or unauthorized.');
     }
 
-    // 3. Request answer from Gemini
     const answer = await askGemini(document.extractedContent, question);
 
-    // 4. Save question and answer to chat history
     const conversation = await Conversation.create({
       user: req.user._id,
       document: documentId,
@@ -39,7 +37,6 @@ const askQuestion = async (req, res, next) => {
       answer: answer,
     });
 
-    // Populate document metadata before sending response
     const populatedConv = await Conversation.findById(conversation._id).populate('document', 'title fileType');
 
     res.status(200).json({

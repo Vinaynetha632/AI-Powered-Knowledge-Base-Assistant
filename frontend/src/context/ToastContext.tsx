@@ -26,7 +26,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
 
-    // Auto-remove toast after 4 seconds
     setTimeout(() => {
       removeToast(id);
     }, 4000);
@@ -36,7 +35,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <ToastContext.Provider value={{ showToast }}>
       {children}
       
-      {/* Toast Notification Container */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3 max-w-md w-full sm:w-auto">
         {toasts.map((toast) => {
           let bgColor = 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800';

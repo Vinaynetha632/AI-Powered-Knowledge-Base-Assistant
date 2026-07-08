@@ -26,7 +26,6 @@ const Documents: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Modal states for delete confirmation
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [docToDelete, setDocToDelete] = useState<Document | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -47,7 +46,6 @@ const Documents: React.FC = () => {
   };
 
   useEffect(() => {
-    // Implement simple debounce for search
     const delayDebounceFn = setTimeout(() => {
       fetchDocuments(searchTerm);
     }, 350);
@@ -102,7 +100,6 @@ const Documents: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Header and Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-xl font-extrabold text-zinc-950 dark:text-white">
@@ -121,7 +118,6 @@ const Documents: React.FC = () => {
         </Link>
       </div>
 
-      {/* Search Input Bar */}
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
           <Search className="h-5 w-5 text-zinc-400" />
@@ -135,7 +131,6 @@ const Documents: React.FC = () => {
         />
       </div>
 
-      {/* Grid List View */}
       {loading && documents.length === 0 ? (
         <Loader message="Fetching knowledge library..." size="lg" />
       ) : documents.length === 0 ? (
@@ -150,7 +145,6 @@ const Documents: React.FC = () => {
           actionText={searchTerm ? 'Clear Search' : 'Upload Document'}
           actionPath={searchTerm ? undefined : '/upload'}
           {...(searchTerm ? { actionText: 'Show All Documents', actionPath: undefined } : {})}
-          // Custom handler for clear search when actionPath is omitted
           {...(searchTerm
             ? {
                 actionText: 'Show All',
@@ -169,7 +163,6 @@ const Documents: React.FC = () => {
               key={doc._id}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 flex flex-col justify-between hover:border-zinc-350 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 space-y-4"
             >
-              {/* Card Header Info */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-150 dark:border-zinc-800/60 shadow-inner">
@@ -201,7 +194,6 @@ const Documents: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800/40">
                 <Link
                   to={`/chat?docId=${doc._id}`}
@@ -230,7 +222,6 @@ const Documents: React.FC = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

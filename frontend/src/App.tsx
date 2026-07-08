@@ -28,15 +28,11 @@ const App: React.FC = () => {
       <ToastProvider>
         <AuthProvider>
           <Routes>
-            {/* ==========================================
-                Public Routes
-               ========================================== */}
+        
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* ==========================================
-                Protected Application Shell
-               ========================================== */}
+           
             <Route
               path="/"
               element={
@@ -45,27 +41,20 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               }
             >
-              {/* Dashboard */}
               <Route index element={<Dashboard />} />
 
-              {/* Upload document */}
               <Route path="upload" element={<UploadDocument />} />
 
-              {/* Document Lists & Previews */}
               <Route path="documents" element={<Documents />} />
               <Route path="documents/:id" element={<DocumentPreview />} />
 
-              {/* AI Chat Playground */}
               <Route path="chat" element={<AIChat />} />
 
-              {/* Chat History Logs */}
               <Route path="history" element={<ConversationHistory />} />
 
-              {/* 404 Fallback page nested inside Layout */}
               <Route path="*" element={<NotFound />} />
             </Route>
 
-            {/* Catch-all external routes -> Redirect to dashboard */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>

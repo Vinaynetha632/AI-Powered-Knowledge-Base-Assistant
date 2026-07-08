@@ -26,7 +26,6 @@ const Register: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    // Input Validations
     if (!name || !email || !password || !confirmPassword) {
       setError('Please fill in all fields.');
       return;
@@ -60,7 +59,6 @@ const Register: React.FC = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950 px-4 py-12 sm:px-6 lg:px-8 font-sans">
       <div className="w-full max-w-md space-y-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-2xl shadow-xl">
-        {/* Brand/Header */}
         <div className="flex flex-col items-center justify-center text-center">
           <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-violet-600 text-white shadow-lg shadow-violet-500/20 mb-4">
             <Sparkles className="w-6 h-6 animate-pulse" />
@@ -73,16 +71,13 @@ const Register: React.FC = () => {
           </p>
         </div>
 
-        {/* Global Error Banner */}
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-xs font-semibold text-rose-800 dark:text-rose-300">
             {error}
           </div>
         )}
 
-        {/* Register Form */}
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-          {/* Name input */}
           <div>
             <label
               htmlFor="name"
@@ -107,7 +102,6 @@ const Register: React.FC = () => {
             </div>
           </div>
 
-          {/* Email input */}
           <div>
             <label
               htmlFor="email"
@@ -132,7 +126,6 @@ const Register: React.FC = () => {
             </div>
           </div>
 
-          {/* Password input */}
           <div>
             <label
               htmlFor="password"
@@ -157,7 +150,6 @@ const Register: React.FC = () => {
             </div>
           </div>
 
-          {/* Confirm Password input */}
           <div>
             <label
               htmlFor="confirmPassword"
@@ -182,7 +174,7 @@ const Register: React.FC = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
+      
           <div className="pt-2">
             <button
               type="submit"
@@ -201,7 +193,7 @@ const Register: React.FC = () => {
           </div>
         </form>
 
-        {/* Navigation to Login */}
+      
         <div className="text-center pt-2">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             Already have an account?{' '}

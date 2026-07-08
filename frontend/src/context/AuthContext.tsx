@@ -17,7 +17,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Check if user is already logged in on mount
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('token');
@@ -26,7 +25,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (token && savedUser) {
         try {
           setUser(JSON.parse(savedUser));
-          // Refresh user data from API in background to verify token is valid
           const data = await authService.getMe();
           if (data.success && data.user) {
             setUser(data.user);
@@ -34,7 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } catch (error) {
           console.error('Failed to initialize session from server:', error);
-          // Token is invalid/expired
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           setUser(null);

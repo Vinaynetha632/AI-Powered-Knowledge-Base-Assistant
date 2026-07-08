@@ -61,7 +61,6 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        {/* Global Error Banner */}
         {error && (
           <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/50 text-xs font-semibold text-rose-800 dark:text-rose-300">
             {error}
@@ -70,7 +69,6 @@ const Login: React.FC = () => {
 
         {/* Login Form */}
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-          {/* Email input */}
           <div>
             <label
               htmlFor="email"
@@ -96,7 +94,6 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          {/* Password input */}
           <div>
             <label
               htmlFor="password"
@@ -122,7 +119,6 @@ const Login: React.FC = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="pt-2">
             <button
               type="submit"
@@ -141,7 +137,6 @@ const Login: React.FC = () => {
           </div>
         </form>
 
-        {/* Navigation to Register */}
         <div className="text-center pt-2">
           <p className="text-xs text-zinc-400 dark:text-zinc-500">
             Don't have an account?{' '}

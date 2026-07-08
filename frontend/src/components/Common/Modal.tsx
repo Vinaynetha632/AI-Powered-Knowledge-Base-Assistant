@@ -22,7 +22,6 @@ const Modal: React.FC<ModalProps> = ({
   confirmBtnStyle = 'bg-rose-600 hover:bg-rose-700 focus:ring-rose-500 text-white',
   cancelText = 'Cancel',
 }) => {
-  // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -59,12 +58,12 @@ const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
+    =
         <div className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
           {children}
         </div>
 
-        {/* Action Buttons */}
+      
         <div className="flex justify-end gap-3">
           <button
             type="button"

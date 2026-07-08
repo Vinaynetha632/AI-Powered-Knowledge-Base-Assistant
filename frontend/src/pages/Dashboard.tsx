@@ -71,7 +71,6 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 font-sans">
-      {/* Welcome Hero Panel */}
       <div className="relative overflow-hidden rounded-3xl bg-zinc-900 text-white p-6 md:p-8 shadow-lg border border-zinc-800">
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 rounded-full bg-violet-600/20 blur-2xl"></div>
         <div className="relative z-10 max-w-xl space-y-3">
@@ -88,9 +87,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-        {/* Documents Card */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-2xl shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
@@ -105,7 +102,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Questions Card */}
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 rounded-2xl shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
@@ -121,9 +117,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid View */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Uploads Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-zinc-950 dark:text-white flex items-center gap-2">
@@ -185,7 +179,6 @@ const Dashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Recent Conversations Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-bold text-zinc-950 dark:text-white flex items-center gap-2">

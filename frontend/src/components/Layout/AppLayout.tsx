@@ -51,9 +51,7 @@ const AppLayout: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-zinc-50 dark:bg-zinc-950 font-sans overflow-hidden">
-      {/* ==========================================
-          Desktop Sidebar (Hidden on Mobile)
-         ========================================== */}
+
       <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 flex-shrink-0">
         {/* Brand Logo Header */}
         <div className="flex items-center gap-2 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/60">
@@ -70,7 +68,7 @@ const AppLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar Nav Links */}
+       
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -92,7 +90,7 @@ const AppLayout: React.FC = () => {
           })}
         </nav>
 
-        {/* User Profile Footer & Logout */}
+    
         <div className="p-4 border-t border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/40">
           <div className="flex items-center gap-3 px-2 py-2 mb-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
@@ -117,18 +115,16 @@ const AppLayout: React.FC = () => {
         </div>
       </aside>
 
-      {/* ==========================================
-          Mobile Sidebar Drawer (Slide-out menu)
-         ========================================== */}
+      
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
-          {/* Backdrop overlay */}
+       
           <div
             className="fixed inset-0 bg-zinc-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setMobileMenuOpen(false)}
           ></div>
 
-          {/* Drawer contents */}
+        
           <div className="relative flex flex-col w-64 max-w-xs bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 animate-slide-in-left">
             <div className="absolute top-4 right-4">
               <button
@@ -139,7 +135,7 @@ const AppLayout: React.FC = () => {
               </button>
             </div>
 
-            {/* Brand Logo */}
+       
             <div className="flex items-center gap-2 px-6 py-5 border-b border-zinc-100 dark:border-zinc-800/60">
               <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-violet-600 text-white shadow-md">
                 <Sparkles className="w-5 h-5" />
@@ -154,7 +150,6 @@ const AppLayout: React.FC = () => {
               </div>
             </div>
 
-            {/* Navigation links */}
             <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -177,7 +172,6 @@ const AppLayout: React.FC = () => {
               })}
             </nav>
 
-            {/* User Profile / Logout */}
             <div className="p-4 border-t border-zinc-100 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/40">
               <div className="flex items-center gap-3 px-2 py-2 mb-3">
                 <div className="flex items-center justify-center w-9 h-9 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
@@ -206,15 +200,11 @@ const AppLayout: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* ==========================================
-          Main Layout Content View
-         ========================================== */}
+=
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Navbar */}
         <header className="flex items-center justify-between px-6 py-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800/60 flex-shrink-0 z-10">
           <div className="flex items-center gap-4">
-            {/* Mobile Menu trigger */}
             <button
               onClick={() => setMobileMenuOpen(true)}
               className="md:hidden flex items-center justify-center w-10 h-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-300 cursor-pointer"
@@ -227,7 +217,6 @@ const AppLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Display logged-in name for quick visual check */}
             <span className="hidden sm:inline-block text-xs font-semibold text-zinc-500 dark:text-zinc-400">
               Welcome, <span className="text-zinc-800 dark:text-zinc-200 font-bold">{user?.name}</span>
             </span>
@@ -237,7 +226,6 @@ const AppLayout: React.FC = () => {
           </div>
         </header>
 
-        {/* Scrollable Viewport Container for router sub-pages */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           <div className="max-w-6xl mx-auto w-full">
             <Outlet />

@@ -80,7 +80,6 @@ const ConversationHistory: React.FC = () => {
         </p>
       </div>
 
-      {/* Search Bar */}
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
           <Search className="h-5 w-5 text-zinc-400" />
@@ -94,7 +93,6 @@ const ConversationHistory: React.FC = () => {
         />
       </div>
 
-      {/* History Log List */}
       {loading && history.length === 0 ? (
         <Loader message="Gathering question archives..." size="lg" />
       ) : history.length === 0 ? (
@@ -126,7 +124,6 @@ const ConversationHistory: React.FC = () => {
               key={conv._id}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200"
             >
-              {/* Top Meta info */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-zinc-100 dark:border-zinc-800/40">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/65 text-xs font-bold text-zinc-650 dark:text-zinc-350 max-w-[320px] sm:max-w-xs md:max-w-md truncate">
                   {getFileIcon(conv.document?.fileType)}
@@ -138,9 +135,7 @@ const ConversationHistory: React.FC = () => {
                 </span>
               </div>
 
-              {/* QA bubbles in historical log card */}
               <div className="space-y-3.5">
-                {/* Question */}
                 <div className="space-y-1">
                   <h4 className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                     Question Asked
@@ -150,7 +145,6 @@ const ConversationHistory: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Answer */}
                 <div className="space-y-1">
                   <h4 className="text-[10px] font-black uppercase text-zinc-450 dark:text-zinc-500 tracking-wider">
                     AI Answer Response
@@ -161,7 +155,6 @@ const ConversationHistory: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action buttons */}
               {conv.document && (
                 <div className="flex justify-end pt-1">
                   <button
